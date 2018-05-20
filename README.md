@@ -29,8 +29,11 @@ __*main.cpp*__
 
 __*MPC.cpp*__
 
-1. There are two main classes: MPC and FG_eval. MPC class implements the _Solve()_ method which returns the best actuator controls for the current time step, as well as the trajectory which minimizes the cost function. FG_eval class implements the _operator()_ method which sets up the _fg_ vector storing the states and constraints for the vehicle over _N_ time-steps assuming a simple kinematic model.
-2. 
+1. There are two main classes: MPC and FG_eval. MPC class implements the _Solve()_ method which returns the best actuator controls for the current time step, as well as the trajectory which minimizes the cost function. FG_eval class implements the _operator()_ method which sets up the _fg_ vector storing the cost function, states and constraints for the vehicle over _N_ time-steps assuming a simple kinematic model.
+2. __operator()__ method: The first element of the _fg_ vector is the cost function. The cost function is defined by a weighted combination of the _CTE_, _epsi_, deviation of actual speed from the reference speed, penalties for using throttle and steering actuators, as well as penalties for changing the actuators too rapidly. The weight parameters for applying steering actuator or penalizing rapid changes in steering angle are tunable. After some experimentation, both weights are configured to 300.
+3. __operator()__ method: The rest of the _fg_ vector holds states and constraints as described in the Udacity lectures. Since the steering actuator in the Unity simulator is opposite in sign to the examples in the lectures, I inverted the signs in the equations involving the steering actuator delta.
+4. __Solve()__ method: The Solve method sets up the arguments for invoking the CppAD::ipopt library's _solve()_ routine. This involves setting the _vars[]_ array. The first few elements of this array are the state of the car. To model the control latency of 100ms, we initialize the states by using the current states, and predicting the state of the car one time step _dt_ into the future using the previous throttle and steering actuator controls. The remainder of the _vars[]_ array is initialized as described in the Udacity lectures.
+5. __Solve()__ method: The solution returned by CppAD::ipopt library's _solve()_ routine holds the optimal trajectory which minimizes the cost function, as well as the associated actuator controls for achieving that trajectory. The current
 
 Tuning
 ---

@@ -106,7 +106,8 @@ int main() {
           // we need to invert this matrix.
           //
           // [x_vehicle, y_vehicle]^T = [cos(psi) sin(psi) -py*sin(psi)-px*cos(psi)        [  x_map
-          //                            -sin(psi)  cos(psi) -py*cos(psi)+px*sin(psi)]    X    dy_map]
+          //                            -sin(psi)  cos(psi) -py*cos(psi)+px*sin(psi)]    X    dy_map
+          //                                                                                  1      ]
           Eigen::VectorXd xvals(ptsx.size()), yvals(ptsx.size()), state(6);
           for (unsigned int i=0; i<ptsx.size();i++)
           {

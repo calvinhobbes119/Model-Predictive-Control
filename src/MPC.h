@@ -4,7 +4,7 @@
 #include <vector>
 #include "Eigen-3.3/Eigen/Core"
 
-#define NUM_TIMESTEPS                                  (15)   // N = 6
+#define NUM_TIMESTEPS                                  (15)   // N = 15
 #define DELTA_TIME                                     (0.1) // 100ms for dt
 #define REFERENCE_SPEED                                (50 * 0.447)  // ref_v = 50 mph. Convert to m/s.
 #define DELTA_ACTUATOR_COST_MULTIPLIER                 (300)  // Tuning parameter for weighing

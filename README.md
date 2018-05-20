@@ -1,2 +1,52 @@
 # Model-Predictive-Control
 Udacity Self-Driving NanoDegree Term 2 Project on Model Predictive Control
+
+## Project: Model-Predictive-Control [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
+
+Overview
+---
+This project implements Model Predictive Control (MPC) for Udacity's Self Driving Car Nanodegree. It uses an MPC optimizer to estimate the best trajectory of actuators (steering and throttle) to minimize a defined cost function which depends on Cross-track-error (CTE), steering angle error (epsi) and smooth change in control actuators over a predetermined time horizon.
+
+Code changes
+---
+For this project I made the following changes to the starter code.
+
+__*mpc.h*___
+
+1. I defined useful macros for number of timesteps
+__*main.cpp*__
+
+1. I instatiated two PID controller objects for updating the steering value and throttle.
+2. I manually tuned the PID parameters for _Kp_, _Kd_ and _Ki_ to achieve acceptable performance. The performance was assessed by using a combination of the following factors: How much CTE or deviation from the center of the lane existed, how much the car oscillated about the lane center and how much CTE bias was present. See discussion below for more details.
+3. To eliminate sudden changes to steering value or throttle position from one measurement to the next, I smoothed the CTE measurements by taking the average with the previous CTE measurement. See discussion below for more details.
+4. I fed the smoothed CTE value to the PID controller which adjusted steering value. I thresholded the steering value returned by my PID controller so that the steering value is always in the range [-1.0, +1.0].
+5. I fed the absoulte value of the smoothed CTE to another PID contorller which adjusted the speed. The reason for using the absolute CTE value is because the throttle should be increased whenever the CTE is close to zero (irrespective of whether it is positive or negative), and lowered whenever the CTE deviates from zero (again irrespective of whether it is positive or negative). The throttle value returned by this PID controller is then applied as an offset to the nominal throttle position of 0.3 provided in the starter code.
+
+__*PID.cpp*__
+
+1. I updated the Init method to initialize the PID controller tune parameters _Kp_, _Kd_ and _Ki_ to the tuned values.
+2. I updated the UpdateError method to update the proportional, derivative and integral error terms (_p_error_, _d_error_, _i_error_) based on previous CTE and current CTE.
+3. I updated the TotalError method to retun the total error as the scalar product of [_Kp_, _Kd_ and _Ki_] with [_p_error_, _d_error_, _i_error_]. The total error is the output of the PID controller which is used to control steering angle or throttle position.
+
+Tuning
+---
+I manually tuned the  PID parameters for steer value _Kp_, _Kd_ and _Ki_ assuming a fixed throttle position of 0.3. The procedure I followed for tuning _Kp_, _Kd_ and _Ki_.
+
+1. Assume _Kd_ and _Ki_ are zero. Choose a value of _Kp_ which causes the car to remain on track for a reasonable length of time, say several timesteps. This results in a plot of CTE as shown below with a value of _Kp_ = -0.2. As the plot shows the car stays on the track for several timesteps, but the CTE oscillations increase without dampening until the car veers off track. This indicates that we need to tweak the _Kd_ parameter to reduce the magnitude of the oscillations.
+
+![Vary_Kp_alone](https://github.com/calvinhobbes119/PID-Controller/blob/master/figures/Kp_-0.2_Kd_0.0_Ki_0.0.png)
+
+3. Keeping _Kp_ at -0.2, and _Ki_ at 0.0, I modified the _Kd_ parameter until the car stayed on track for the entire course. This results in a plot of CTE as shown below with a value of _Kd_ = -3.0.
+
+![Vary_Kd_alone](https://github.com/calvinhobbes119/PID-Controller/blob/master/figures/Kp_-0.2_Kd_-3.0_Ki_0.0.png)
+
+After zooming into the above plot, I noticed that there were many oscillations in the steering value (and the resulting CTE) from one timestep to the next. To reduce these oscillations I smoothed the CTE by averaging it with the CTE from the previous timestep. This resulted in a smoother steer value and CTE from one timestep to the next.
+
+![Using_raw_vs_smoothed_CTE](https://github.com/calvinhobbes119/PID-Controller/blob/master/figures/Using_raw_vs_smoothed_CTE.png)
+
+4. Finally, by calculating the average and median CTE over the course of one lap, it was clear that the CTE had a non-zero bias. By setting the _Ki_ parameter to -0.001, I was able to bring both the average and median CTE to close to zero.
+
+5. I did some fine tuning of the _Kp_, _Kd_ and _Ki_ to account for the throttle PID controller in arriving at the final values used in the code. The video below shows the performance of the PID controllers around the simulated racetrack.
+
+
+[![PID Controller](https://github.com/calvinhobbes119/PID-Controller/blob/master/figures/Untitled.png)](https://youtu.be/PbgqzFjZbFI)

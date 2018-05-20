@@ -11,7 +11,7 @@ Code changes
 ---
 For this project I made the following changes to the starter code.
 
-__*mpc.h*___
+__*mpc.h*__
 
 1. I defined useful macros for number of timesteps _N_, time-delta between acutations _dt_, reference speed (converted to m/s), and cost function multipliers for changing steering values as well as rate-of-change of steering value.
 2. In selecting _N_ and _dt_ I considered the following factors: (a) Predicting states for _N * dt_ timesteps should span the entire set of waypoints which are available at each instant. This allows us to make better instantaneous control decisions because we are operating with knowledge of the longest future time-horizon. (b) _dt_ should be a divisor of the control latency (100ms) allowing us absorb the control latency into our model as a prediction over some finite number of _dt_ time intervals.
@@ -29,7 +29,8 @@ __*main.cpp*__
 
 __*MPC.cpp*__
 
-1. There are two 
+1. There are two main classes: MPC and FG_eval. MPC class implements the _Solve()_ method which returns the best actuator controls for the current time step, as well as the trajectory which minimizes the cost function. FG_eval class implements the _operator()_ method which sets up the _fg_ vector storing the states and constraints for the vehicle over _N_ time-steps assuming a simple kinematic model.
+2. 
 
 Tuning
 ---

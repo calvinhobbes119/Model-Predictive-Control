@@ -5,7 +5,7 @@ Udacity Self-Driving NanoDegree Term 2 Project on Model Predictive Control
 
 Overview
 ---
-This project implements Model Predictive Control (MPC) for Udacity's Self Driving Car Nanodegree. It uses an MPC optimizer to estimate the best trajectory of actuators (steering and throttle) to minimize a defined cost function which depends on Cross-track-error (CTE), steering angle error (epsi) and smooth change in control actuators over a predetermined time horizon.
+This project implements Model Predictive Control (MPC) for Udacity's Self Driving Car Nanodegree. It uses an MPC optimizer to estimate the best trajectory of actuators (steering and throttle) to minimize a defined cost function which depends on Cross-track-error (CTE), steering angle error (epsi) and ensures a smooth change in control actuators over a predetermined time horizon.
 
 Code changes
 ---
@@ -13,7 +13,10 @@ For this project I made the following changes to the starter code.
 
 __*mpc.h*___
 
-1. I defined useful macros for number of timesteps
+1. I defined useful macros for number of timesteps _N_, time-delta between acutations _dt_, reference speed (converted to m/s), and cost function multipliers for changing steering values as well as rate-of-change of steering value.
+2. In selecting _N_ and _dt_ I considered the following factors: (a) Predicting states for _N * dt_ timesteps should span the entire set of waypoints which are available at each instant. This allows us to make better instantaneous control decisions because we are operating with knowledge of the longest future time-horizon. (b) _dt_ should be a divisor of the control latency (100ms) allowing us absorb the control latency into our model as a prediction over some finite number of _dt_ time intervals.
+3. Picking a reasonable refrence speed of _V_ of 50 mph, the considerations in (2) yielded two possible options for (_N_,_dt_) - (15, 0.1) and (30, 0.05). Setting _N_ = 15 and _dt_ = 0.1 gave better results than the other option, so I settled on that.
+
 __*main.cpp*__
 
 1. I instatiated two PID controller objects for updating the steering value and throttle.

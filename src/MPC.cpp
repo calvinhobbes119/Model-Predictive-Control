@@ -158,7 +158,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   // Set the initial state to be 100ms in the future
   // using kinematic model. This is used to model control
   // latency.
-  double time_delta = 0.1;
+  double time_delta = DELTA_TIME;
   double x = state[0] + state[3] * cos(state[2]) * time_delta;
   double y = state[1] + state[3] * sin(state[2]) * time_delta;
   double psi = state[2] - state[3] / Lf * prev_delta * time_delta;

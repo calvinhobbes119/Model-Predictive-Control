@@ -33,27 +33,10 @@ __*MPC.cpp*__
 2. __operator()__ method: The first element of the _fg_ vector is the cost function. The cost function is defined by a weighted combination of the _CTE_, _epsi_, deviation of actual speed from the reference speed, penalties for using throttle and steering actuators, as well as penalties for changing the actuators too rapidly. The weight parameters for applying steering actuator or penalizing rapid changes in steering angle are tunable. After some experimentation, both weights are configured to 300.
 3. __operator()__ method: The rest of the _fg_ vector holds states and constraints as described in the Udacity lectures. Since the steering actuator in the Unity simulator is opposite in sign to the examples in the lectures, I inverted the signs in the equations involving the steering actuator delta.
 4. __Solve()__ method: The Solve method sets up the arguments for invoking the CppAD::ipopt library's _solve()_ routine. This involves setting the _vars[]_ array. The first few elements of this array are the state of the car. To model the control latency of 100ms, we initialize the states by using the current states, and predicting the state of the car one time step _dt_ into the future using the previous throttle and steering actuator controls. The remainder of the _vars[]_ array is initialized as described in the Udacity lectures.
-5. __Solve()__ method: The solution returned by CppAD::ipopt library's _solve()_ routine holds the optimal trajectory which minimizes the cost function, as well as the associated actuator controls for achieving that trajectory. The current
+5. __Solve()__ method: The solution returned by CppAD::ipopt library's _solve()_ routine holds the optimal trajectory which minimizes the cost function, as well as the associated actuator controls for achieving that trajectory. The controls for the current timestep is used to set the steering and throttle values inside the _main()_ routine. The optimal trajectory returned from _solve()_ are used to overlay the optimal planned trajectory over the stored map of waypoints for debug purposes.
 
-Tuning
----
-I manually tuned the  PID parameters for steer value _Kp_, _Kd_ and _Ki_ assuming a fixed throttle position of 0.3. The procedure I followed for tuning _Kp_, _Kd_ and _Ki_.
+__*Results*__
 
-1. Assume _Kd_ and _Ki_ are zero. Choose a value of _Kp_ which causes the car to remain on track for a reasonable length of time, say several timesteps. This results in a plot of CTE as shown below with a value of _Kp_ = -0.2. As the plot shows the car stays on the track for several timesteps, but the CTE oscillations increase without dampening until the car veers off track. This indicates that we need to tweak the _Kd_ parameter to reduce the magnitude of the oscillations.
+The results of the MPC project demonstrating the car moving in autonomous mode around the Unity simulator track are shown below.
 
-![Vary_Kp_alone](https://github.com/calvinhobbes119/PID-Controller/blob/master/figures/Kp_-0.2_Kd_0.0_Ki_0.0.png)
-
-3. Keeping _Kp_ at -0.2, and _Ki_ at 0.0, I modified the _Kd_ parameter until the car stayed on track for the entire course. This results in a plot of CTE as shown below with a value of _Kd_ = -3.0.
-
-![Vary_Kd_alone](https://github.com/calvinhobbes119/PID-Controller/blob/master/figures/Kp_-0.2_Kd_-3.0_Ki_0.0.png)
-
-After zooming into the above plot, I noticed that there were many oscillations in the steering value (and the resulting CTE) from one timestep to the next. To reduce these oscillations I smoothed the CTE by averaging it with the CTE from the previous timestep. This resulted in a smoother steer value and CTE from one timestep to the next.
-
-![Using_raw_vs_smoothed_CTE](https://github.com/calvinhobbes119/PID-Controller/blob/master/figures/Using_raw_vs_smoothed_CTE.png)
-
-4. Finally, by calculating the average and median CTE over the course of one lap, it was clear that the CTE had a non-zero bias. By setting the _Ki_ parameter to -0.001, I was able to bring both the average and median CTE to close to zero.
-
-5. I did some fine tuning of the _Kp_, _Kd_ and _Ki_ to account for the throttle PID controller in arriving at the final values used in the code. The video below shows the performance of the PID controllers around the simulated racetrack.
-
-
-[![PID Controller](https://github.com/calvinhobbes119/PID-Controller/blob/master/figures/Untitled.png)](https://youtu.be/PbgqzFjZbFI)
+[![PID Controller](https://github.com/calvinhobbes119/Model-Predictive-Control/blob/master/figures/Untitled.png)](https://youtu.be/PbgqzFjZbFI)

@@ -15,21 +15,21 @@ __*mpc.h*___
 
 1. I defined useful macros for number of timesteps _N_, time-delta between acutations _dt_, reference speed (converted to m/s), and cost function multipliers for changing steering values as well as rate-of-change of steering value.
 2. In selecting _N_ and _dt_ I considered the following factors: (a) Predicting states for _N * dt_ timesteps should span the entire set of waypoints which are available at each instant. This allows us to make better instantaneous control decisions because we are operating with knowledge of the longest future time-horizon. (b) _dt_ should be a divisor of the control latency (100ms) allowing us absorb the control latency into our model as a prediction over some finite number of _dt_ time intervals.
-3. Picking a reasonable refrence speed of _V_ of 50 mph, the considerations in (2) yielded two possible options for (_N_,_dt_) - (15, 0.1) and (30, 0.05). Setting _N_ = 15 and _dt_ = 0.1 gave better results than the other option, so I settled on that.
+3. Picking a reasonable refrence speed of _V_ of 50 mph, the considerations in (2) yielded two possible options for (_N_ , _dt_) - (15 ,  0.1) and (30 , 0.05). Setting _N_ = 15 and _dt_ = 0.1 gave better results than the other option, so I settled on that.
 
 __*main.cpp*__
 
-1. I instatiated two PID controller objects for updating the steering value and throttle.
-2. I manually tuned the PID parameters for _Kp_, _Kd_ and _Ki_ to achieve acceptable performance. The performance was assessed by using a combination of the following factors: How much CTE or deviation from the center of the lane existed, how much the car oscillated about the lane center and how much CTE bias was present. See discussion below for more details.
-3. To eliminate sudden changes to steering value or throttle position from one measurement to the next, I smoothed the CTE measurements by taking the average with the previous CTE measurement. See discussion below for more details.
-4. I fed the smoothed CTE value to the PID controller which adjusted steering value. I thresholded the steering value returned by my PID controller so that the steering value is always in the range [-1.0, +1.0].
-5. I fed the absoulte value of the smoothed CTE to another PID contorller which adjusted the speed. The reason for using the absolute CTE value is because the throttle should be increased whenever the CTE is close to zero (irrespective of whether it is positive or negative), and lowered whenever the CTE deviates from zero (again irrespective of whether it is positive or negative). The throttle value returned by this PID controller is then applied as an offset to the nominal throttle position of 0.3 provided in the starter code.
+1. I transformed the telemetry data by converting the speed _v_ into m/s from mph.
+2. I converted the waypoints from map-coordinates to vehicle coordinates by applying a matrix transformation, and fit a 3rd order polynomial function to the waypoints. The coefficients of this polynomial _f_ will be provided to the MPC solver to predict the optimal control trajectory for minimizing a cost function.
+3. To determine the state parameters _CTE_ and _psi_, we use _f(0)_ and _f'(0)_.
+4. The state vector and best-fit polynomial coeffs are fed to the MPC solve routing.
+5. The MPC solve routine returns the actuator settings for the next time step, as well as the predicted optimal trajectory which minimizes the cost function over _N_ timesteps.
+6. The steering actuator value is normalized by _deg2rad(25)_ to convert the steering value to be between _[-1,1]_.
+7. The MPC predicted trajectory is returned to the Unity simulator as a json message for visualization purposes.
 
-__*PID.cpp*__
+__*MPC.cpp*__
 
-1. I updated the Init method to initialize the PID controller tune parameters _Kp_, _Kd_ and _Ki_ to the tuned values.
-2. I updated the UpdateError method to update the proportional, derivative and integral error terms (_p_error_, _d_error_, _i_error_) based on previous CTE and current CTE.
-3. I updated the TotalError method to retun the total error as the scalar product of [_Kp_, _Kd_ and _Ki_] with [_p_error_, _d_error_, _i_error_]. The total error is the output of the PID controller which is used to control steering angle or throttle position.
+1. There are two 
 
 Tuning
 ---

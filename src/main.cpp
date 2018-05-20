@@ -92,6 +92,7 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
+          //convert speed from mph to m/s
           v *= 0.447;
           // Transform waypoints from vehicle coordinates to map coordinates.
           // We know from the lectures that the transformation from vehicle to
